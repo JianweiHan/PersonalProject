@@ -14,7 +14,7 @@ public class Main {
         System.out.println("Hello World!");
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-1/";
+        String folderPath="../testUML/uml-parser-test-2/";
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);

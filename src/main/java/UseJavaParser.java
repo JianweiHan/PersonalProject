@@ -152,7 +152,7 @@ public class UseJavaParser {
             if (typeFieldVisitor.get(index).indexOf('[')>=0) {
                 substr1 += typeFieldVisitor.get(index).substring(0,typeFieldVisitor.get(index).indexOf('['));
             }
-            else if(typeFieldVisitor.get(index).indexOf('<')>=0){
+            else if(typeFieldVisitor.get(index).contains("Collection") || typeFieldVisitor.get(index).contains("List") || typeFieldVisitor.get(index).contains("Map") || typeFieldVisitor.get(index).contains("Set")){
                 substr1 += typeFieldVisitor.get(index).substring(typeFieldVisitor.get(index).indexOf('<')+1,typeFieldVisitor.get(index).indexOf('>'));
             }
 
@@ -167,7 +167,7 @@ public class UseJavaParser {
 
                 associationItem.attributeName=field;
 
-                if(typeFieldVisitor.get(index).indexOf('[')>=0 || typeFieldVisitor.get(index).indexOf('<')>=0)
+                if(substr1!="")
                     associationItem.ifMultiple=true;
                 else
                     associationItem.ifMultiple=false;
@@ -182,7 +182,7 @@ public class UseJavaParser {
                         typefieldstr += typeFieldVisitor.get(index).substring(0,typeFieldVisitor.get(index).indexOf('['));
                         typefieldstr += "(*)";
                     }
-                    else if(typeFieldVisitor.get(index).indexOf('<')>=0){
+                    else if(typeFieldVisitor.get(index).contains("Collection") || typeFieldVisitor.get(index).contains("List") || typeFieldVisitor.get(index).contains("Map") || typeFieldVisitor.get(index).contains("Set")){
                         typefieldstr += typeFieldVisitor.get(index).substring(typeFieldVisitor.get(index).indexOf('<')+1,typeFieldVisitor.get(index).indexOf('>'));
                         typefieldstr += "(*)";
                     }
@@ -234,7 +234,7 @@ public class UseJavaParser {
                 if(paramtertype.indexOf('[')>=0) {
                     substr1 += paramtertype.substring(0, paramtertype.indexOf('['));
                 }
-                else if(paramtertype.indexOf('<')>=0) {
+                else if(paramtertype.contains("Collection") || paramtertype.contains("List") || paramtertype.contains("Map") ||paramtertype.contains("Set") ) {
                     substr1 += paramtertype.substring(paramtertype.indexOf('<')+1,paramtertype.indexOf('>'));
                 }
                 else
@@ -260,7 +260,7 @@ public class UseJavaParser {
             if(returntype.indexOf('[')>=0) {
                 substr1 += returntype.substring(0, returntype.indexOf('['));
             }
-            else if(returntype.indexOf('<')>=0) {
+            else if(returntype.contains("Collection") || returntype.contains("List") || returntype.contains("Map") ||returntype.contains("Set") ) {
                 substr1 += returntype.substring(returntype.indexOf('<')+1,returntype.indexOf('>'));
             }
             else
