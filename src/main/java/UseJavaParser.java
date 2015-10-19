@@ -13,7 +13,7 @@ public class UseJavaParser {
     static List<String> interfaceNames;
     static List<AssociationItem> associationItemMap;  //find association and multiplicity
     static List<ExtendItem> extendItemList; //save all the extend relationship
-    static List<UseInterfaceItem> useInterfaceList; //find ball and socket interface
+    static Set<UseInterfaceItem> useInterfaceList; //find ball and socket interface
     static List<ImplementInterfaceItem> implementInterfaceList;
 
 
@@ -36,6 +36,27 @@ public class UseJavaParser {
     class UseInterfaceItem {
         String interfaceName;
         String useName;
+
+
+        @Override
+        public int hashCode() {
+            int hashcode = 0;
+            hashcode=interfaceName.hashCode()*20;
+            hashcode += useName.hashCode();
+            return hashcode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof UseInterfaceItem) {
+                UseInterfaceItem item = (UseInterfaceItem) obj;
+                return (item.interfaceName.equals(this.interfaceName) && item.useName.equals(this.useName));
+            }
+            else {
+                return false;
+            }
+        }
+
     }
     class ImplementInterfaceItem {
         String interfaceName;
@@ -71,7 +92,7 @@ public class UseJavaParser {
 
         associationItemMap = new ArrayList<AssociationItem>();
         extendItemList = new ArrayList<ExtendItem>();
-        useInterfaceList = new ArrayList<UseInterfaceItem>();
+        useInterfaceList = new LinkedHashSet<UseInterfaceItem>();
         implementInterfaceList = new ArrayList<ImplementInterfaceItem>();
 
         classStrUML = new ArrayList<String>();
@@ -108,7 +129,7 @@ public class UseJavaParser {
             implementClassVisitor = n.getImplements();
 
             //print class name
-            System.out.println("Class name is: " + n.getName());
+            //System.out.println("Class name is: " + n.getName());
             /*
             System.out.println(n.getEndLine());
             if(n.isInterface())
@@ -133,7 +154,7 @@ public class UseJavaParser {
             parameterListMethodVisitor.add(n.getParameters());
 
             //print method name
-            System.out.println(n.getName());
+           // System.out.println(n.getName());
 
         }
     }
@@ -236,7 +257,6 @@ public class UseJavaParser {
                     useInterfaceItem.interfaceName = interfaceName;
                     useInterfaceItem.useName = nameClassVisitor;
 
-                    if(useInterfaceList.indexOf(useInterfaceItem)<0)
                         useInterfaceList.add(useInterfaceItem);
                 }
             }
@@ -280,7 +300,6 @@ public class UseJavaParser {
                         useInterfaceItem.interfaceName = interfaceName;
                         useInterfaceItem.useName = nameClassVisitor;
 
-                        if (useInterfaceList.indexOf(useInterfaceItem) < 0)
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -291,7 +310,7 @@ public class UseJavaParser {
 
 
 
-        System.out.print("methodvisitor: "+nameMethodVisitor);
+        //System.out.print("methodvisitor: "+nameMethodVisitor);
         //C. making method UML String
         for(String methodName:nameMethodVisitor)
         {
@@ -331,7 +350,6 @@ public class UseJavaParser {
                         useInterfaceItem.interfaceName = interfaceName;
                         useInterfaceItem.useName = nameClassVisitor;
 
-                        if(useInterfaceList.indexOf(useInterfaceItem)<0)
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -356,7 +374,6 @@ public class UseJavaParser {
                     useInterfaceItem.interfaceName = interfaceName;
                     useInterfaceItem.useName = nameClassVisitor;
 
-                    if(useInterfaceList.indexOf(useInterfaceItem)<0)
                         useInterfaceList.add(useInterfaceItem);
                 }
             }
@@ -365,7 +382,7 @@ public class UseJavaParser {
         source +="}\n";
 
         //print class string for UML
-        System.out.print(source);
+        //System.out.print(source);
 
         classStrUML.add(source);
     }

@@ -107,10 +107,10 @@ public class Main {
 //        {
 //            System.out.println("extend: " + newItem.subClassName+ ":"+newItem.superClassName);
 //        }
-//        for(UseJavaParser.UseInterfaceItem newItem:usejavaparser.useInterfaceList)
-//        {
-//            System.out.println("useInterface: " + newItem.useName+ ":"+newItem.interfaceName);
-//        }
+        for(UseJavaParser.UseInterfaceItem newItem:usejavaparser.useInterfaceList)
+        {
+            System.out.println("useInterface: " + newItem.useName+ ":"+newItem.interfaceName);
+        }
 //
 //
 //        for (UseJavaParser.AssociationItem item:usejavaparser.associationItemMap)
