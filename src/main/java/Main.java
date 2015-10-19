@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-5/";
+        String folderPath="../testUML/uml-parser-test-4/";
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);

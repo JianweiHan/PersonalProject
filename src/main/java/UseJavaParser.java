@@ -180,7 +180,7 @@ public class UseJavaParser {
             }
             else{
 
-                if (ModifierSet.isPublic(modifierFieldVistor.get(index))){
+
                     String typefieldstr="";
                     if (typeFieldVisitor.get(index).indexOf('[')>=0) {
                         typefieldstr += typeFieldVisitor.get(index).substring(0,typeFieldVisitor.get(index).indexOf('['));
@@ -193,8 +193,13 @@ public class UseJavaParser {
                     else {
                         typefieldstr +=typeFieldVisitor.get(index);
                     }
-                    source += "+" + field + ":" + typefieldstr + "\n";
-                }
+
+                   if (ModifierSet.isPublic(modifierFieldVistor.get(index))){
+                        source += "+" + field + ":" + typefieldstr + "\n";
+                   }
+                   else if (ModifierSet.isPrivate(modifierFieldVistor.get(index))) {
+                       source += "-" + field + ":" + typefieldstr + "\n";
+                   }
             }
 
             //2.find if any use of interface in the field type, save to useInterfaceList
