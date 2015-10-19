@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-4/";
+        String folderPath="../testUML/uml-parser-test-5/";
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);
@@ -84,6 +84,7 @@ public class Main {
             new UseJavaParser.ClassVisitor().visit(cu, null);
             new UseJavaParser.MethodVisitor().visit(cu, null);
             new UseJavaParser.FieldVisitor().visit(cu, null);
+            new UseJavaParser.ConstructorVisitor().visit(cu,null);
 
 
             //create UML string if it is a class, not an interface

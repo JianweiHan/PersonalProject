@@ -59,6 +59,11 @@ public class UseJavaParser {
     static List<Integer> modifierFieldVistor;
     static List<String> typeFieldVisitor;
 
+    //4. used to save output from ConstructorVisitor
+    static List<String>  nameConstructorVisitor;
+    static List<Integer> modifierConstructorVisitor;
+    static List<List<Parameter>> parameterListConstructorVisitor;
+
 
     UseJavaParser(){
         classNames = new ArrayList<String>();
@@ -85,6 +90,10 @@ public class UseJavaParser {
         nameFieldVisitor = new ArrayList<String>();
         modifierFieldVistor = new ArrayList<Integer>();
         typeFieldVisitor = new ArrayList<String>();
+
+        nameConstructorVisitor = new ArrayList<String>();
+        modifierConstructorVisitor = new ArrayList<Integer>();
+        parameterListConstructorVisitor = new ArrayList<List<Parameter>>();
     }
 
 
@@ -141,11 +150,28 @@ public class UseJavaParser {
         }
     }
 
+    //4. visit constructor
+    public static class ConstructorVisitor extends VoidVisitorAdapter {
+
+        @Override
+        public void visit(ConstructorDeclaration n, Object arg) {
+            modifierConstructorVisitor.add(n.getModifiers());
+            nameConstructorVisitor.add(n.getName());
+            parameterListConstructorVisitor.add(n.getParameters());
+
+
+        }
+    }
+
+
+
 
     //1. create class UML & save use of interfaces & save association
     public void createClassStrUML() {
         String source = "";
         source +="class " +  nameClassVisitor +" {\n";
+
+        //A. Making UML FIELD string
         for (String field: nameFieldVisitor)
         {
             //1. create field string of class UML
@@ -217,8 +243,56 @@ public class UseJavaParser {
         }
 
         source += "__\n";
-        System.out.print("methodvisitor: "+nameMethodVisitor);
 
+        //B. making constructor UML String
+        for(String methodName:nameConstructorVisitor) {
+            int index = nameConstructorVisitor.indexOf(methodName);
+            if (ModifierSet.isPublic(modifierConstructorVisitor.get(index))) {
+                String parameterStr = "";
+
+                for (Parameter parameterSingle : parameterListConstructorVisitor.get(index)) {
+                    String[] parts = parameterSingle.toString().split(" ");
+                    parameterStr += parts[1] + ":" + parameterSingle.getType();
+                    if (parameterListConstructorVisitor.get(index).indexOf(parameterSingle) + 1 != parameterListConstructorVisitor.get(index).size())
+                        parameterStr += ",";
+                }
+
+                source += "+" + methodName + "(" + parameterStr + ")" +  "\n";
+            }
+
+
+            //find if any use of interface in parameters, save to useInterfaceList
+            for (Parameter parameterSingle : parameterListConstructorVisitor.get(index)) {
+                String substr1 = "";
+                String paramtertype = parameterSingle.getType().toString();
+
+                if (paramtertype.indexOf('[') >= 0) {
+                    substr1 += paramtertype.substring(0, paramtertype.indexOf('['));
+                } else if (paramtertype.contains("Collection") || paramtertype.contains("List") || paramtertype.contains("Map") || paramtertype.contains("Set")) {
+                    substr1 += paramtertype.substring(paramtertype.indexOf('<') + 1, paramtertype.indexOf('>'));
+                } else
+                    substr1 += paramtertype;
+
+
+                for (String interfaceName : interfaceNames) {
+                    if (interfaceName.equals(substr1)) {
+                        UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
+                        useInterfaceItem.interfaceName = interfaceName;
+                        useInterfaceItem.useName = nameClassVisitor;
+
+                        if (useInterfaceList.indexOf(useInterfaceItem) < 0)
+                            useInterfaceList.add(useInterfaceItem);
+                    }
+                }
+            }
+        }
+
+
+
+
+
+        System.out.print("methodvisitor: "+nameMethodVisitor);
+        //C. making method UML String
         for(String methodName:nameMethodVisitor)
         {
             int index = nameMethodVisitor.indexOf(methodName);
@@ -488,6 +562,11 @@ public class UseJavaParser {
         nameFieldVisitor.clear();
         modifierFieldVistor.clear();
         typeFieldVisitor.clear();
+
+
+        nameConstructorVisitor.clear();
+        modifierConstructorVisitor.clear();
+        parameterListConstructorVisitor.clear();
 
     }
 
