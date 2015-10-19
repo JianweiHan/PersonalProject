@@ -1,9 +1,8 @@
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
-import javax.jws.soap.SOAPBinding;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -11,10 +10,9 @@ import java.util.ArrayList;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello World!");
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-2/";
+        String folderPath="../testUML/uml-parser-test-5/";
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);
@@ -91,29 +89,34 @@ public class Main {
             //create UML string if it is a class, not an interface
             if(usejavaparser.classNames.indexOf(usejavaparser.nameClassVisitor)>=0) {
                 usejavaparser.createClassStrUML();
-                usejavaparser.clearTempStaticClass();
             }
+            usejavaparser.clearTempStaticClass();
         }
 
 
+        /**
+         * screen print result for test
+         */
+//        for(UseJavaParser.ImplementInterfaceItem newItem:usejavaparser.implementInterfaceList)
+//        {
+//            System.out.println("implement: " + newItem.implementName + ":" + newItem.interfaceName);
+//        }
+//
+//        for(UseJavaParser.ExtendItem newItem:usejavaparser.extendItemList)
+//        {
+//            System.out.println("extend: " + newItem.subClassName+ ":"+newItem.superClassName);
+//        }
+//        for(UseJavaParser.UseInterfaceItem newItem:usejavaparser.useInterfaceList)
+//        {
+//            System.out.println("useInterface: " + newItem.useName+ ":"+newItem.interfaceName);
+//        }
+//
+//
+//        for (UseJavaParser.AssociationItem item:usejavaparser.associationItemMap)
+//        System.out.println(item.startName+ item.endName+item.attributeName+item.ifMultiple);
 
-        for(UseJavaParser.ImplementInterfaceItem newItem:usejavaparser.implementInterfaceList)
-        {
-            System.out.println("implement: " + newItem.implementName + ":" + newItem.interfaceName);
-        }
-
-        for(UseJavaParser.ExtendItem newItem:usejavaparser.extendItemList)
-        {
-            System.out.println("extend: " + newItem.subClassName+ ":"+newItem.superClassName);
-        }
-        for(UseJavaParser.UseInterfaceItem newItem:usejavaparser.useInterfaceList)
-        {
-            System.out.println("useInterface: " + newItem.useName+ ":"+newItem.interfaceName);
-        }
 
 
-        for (UseJavaParser.AssociationItem item:usejavaparser.associationItemMap)
-        System.out.println(item.startName+ item.endName+item.attributeName+item.ifMultiple);
 
         //3.create association UML string for java classes
         usejavaparser.createAssociationStrUML();
@@ -123,14 +126,21 @@ public class Main {
         usejavaparser.createballsocketStrUML();
 
 
-
+        /**
+         * call UMLGenerator that translates String out put into plantUML
+         */
         UMLGenerator.umlGenerator(usejavaparser.classStrUML, usejavaparser.associationStrUML, usejavaparser.extendStrUML,usejavaparser.ballsocketStrUML);
 
 
+        /**
+         * plantUML out print for test
+         */
+//        for(String name:usejavaparser.classNames)
+//            System.out.println(name);
 
-        for(String name:usejavaparser.classNames)
-            System.out.println(name);
-
+        /**
+         * test if interfaceNames isEmpty?
+         */
         System.out.println(usejavaparser.interfaceNames.isEmpty());
 
     }

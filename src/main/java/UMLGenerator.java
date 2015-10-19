@@ -39,6 +39,13 @@ public class UMLGenerator {
         }
 
         source += "@enduml\n";
+
+
+        //System.out.print(source);//print test
+
+
+
+
         SourceStringReader reader = new SourceStringReader(source);
 // Write the first image to "png"
         String desc = reader.generateImage(png);

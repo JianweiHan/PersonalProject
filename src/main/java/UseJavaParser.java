@@ -98,6 +98,7 @@ public class UseJavaParser {
             extendClassVisitor = n.getExtends();
             implementClassVisitor = n.getImplements();
 
+            //print class name
             System.out.println("Class name is: " + n.getName());
             /*
             System.out.println(n.getEndLine());
@@ -121,6 +122,9 @@ public class UseJavaParser {
             nameMethodVisitor.add(n.getName());
             typeMethodVisitor.add(n.getType().toString());
             parameterListMethodVisitor.add(n.getParameters());
+
+            //print method name
+            System.out.println(n.getName());
 
         }
     }
@@ -208,6 +212,7 @@ public class UseJavaParser {
         }
 
         source += "__\n";
+        System.out.print("methodvisitor: "+nameMethodVisitor);
 
         for(String methodName:nameMethodVisitor)
         {
@@ -279,6 +284,9 @@ public class UseJavaParser {
 
         }
         source +="}\n";
+
+        //print class string for UML
+        System.out.print(source);
 
         classStrUML.add(source);
     }
