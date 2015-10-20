@@ -1,4 +1,5 @@
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -86,6 +87,9 @@ public class UseJavaParser {
     static List<Integer> modifierConstructorVisitor;
     static List<List<Parameter>> parameterListConstructorVisitor;
 
+    //5. used to save inner attribute types of methods
+    static ArrayList<String> innerAttributeTypes  = new ArrayList<String>();
+
 
     UseJavaParser(){
         classNames = new ArrayList<String>();
@@ -116,6 +120,8 @@ public class UseJavaParser {
         nameConstructorVisitor = new ArrayList<String>();
         modifierConstructorVisitor = new ArrayList<Integer>();
         parameterListConstructorVisitor = new ArrayList<List<Parameter>>();
+
+        innerAttributeTypes  = new ArrayList<String>();
     }
 
 
@@ -183,6 +189,14 @@ public class UseJavaParser {
             parameterListConstructorVisitor.add(n.getParameters());
 
 
+        }
+    }
+
+    //5. visit inner attributes in methods
+    public static class VariableDecVisitor extends VoidVisitorAdapter {
+        @Override
+        public void visit(VariableDeclarationExpr n, Object arg) {
+            innerAttributeTypes.add(n.getType().toString());
         }
     }
 
@@ -404,6 +418,22 @@ public class UseJavaParser {
         }
         source +="}\n";
 
+
+        //D. find if any use of interface inside a method
+        for(String innervarType: innerAttributeTypes){
+            for(String interfaceName:interfaceNames) {
+                if (interfaceName.equals(innervarType)) {
+                    UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
+                    useInterfaceItem.interfaceName = interfaceName;
+                    useInterfaceItem.useName = nameClassVisitor;
+
+                    //if use is a class, added to useInterfaceList, ignore use by a interface
+                    if(classNames.contains(nameClassVisitor))
+                        useInterfaceList.add(useInterfaceItem);
+                }
+            }
+        }
+
         //print class string for UML
         //System.out.print(source);
 
@@ -620,6 +650,8 @@ public class UseJavaParser {
         nameConstructorVisitor.clear();
         modifierConstructorVisitor.clear();
         parameterListConstructorVisitor.clear();
+
+        innerAttributeTypes.clear();
 
     }
 
