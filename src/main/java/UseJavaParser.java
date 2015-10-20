@@ -20,7 +20,7 @@ public class UseJavaParser {
     static List<String> classStrUML;  // string input to umlGenerator for generating UML class
     static List<String> associationStrUML; // string input to umlGenerator for generating association UML
     static List<String> extendStrUML; // string input to umlGenerator for generating extend relation
-    static List<String> ballsocketStrUML; // string input ot umlGenerator for generating ball and socket form of interface
+    static List<String> interfaceStrUML; // string input ot umlGenerator for generating ball and socket form of interface
 
     class AssociationItem {
         String startName;
@@ -66,6 +66,7 @@ public class UseJavaParser {
     //1. used to save output from ClassVisitor
     static String nameClassVisitor;
     static boolean isInterfaceClassVisitor;
+    static int modifierClassVisitor;
     static List<ClassOrInterfaceType> extendClassVisitor;
     static List<ClassOrInterfaceType> implementClassVisitor;
 
@@ -98,7 +99,7 @@ public class UseJavaParser {
         classStrUML = new ArrayList<String>();
         associationStrUML = new ArrayList<String>();
         extendStrUML = new ArrayList<String>();
-        ballsocketStrUML = new ArrayList<String>();
+        interfaceStrUML = new ArrayList<String>();
 
         extendClassVisitor = new ArrayList<ClassOrInterfaceType>();
         implementClassVisitor = new ArrayList<ClassOrInterfaceType>();
@@ -127,9 +128,10 @@ public class UseJavaParser {
             isInterfaceClassVisitor = n.isInterface();
             extendClassVisitor = n.getExtends();
             implementClassVisitor = n.getImplements();
+            modifierClassVisitor = n.getModifiers();
 
             //print class name
-            //System.out.println("Class name is: " + n.getName());
+            System.out.println("Class name is: " + n.getName());
             /*
             System.out.println(n.getEndLine());
             if(n.isInterface())
@@ -154,7 +156,7 @@ public class UseJavaParser {
             parameterListMethodVisitor.add(n.getParameters());
 
             //print method name
-           // System.out.println(n.getName());
+            System.out.println(n.getName());
 
         }
     }
@@ -190,7 +192,19 @@ public class UseJavaParser {
     //1. create class UML & save use of interfaces & save association
     public void createClassStrUML() {
         String source = "";
-        source +="class " +  nameClassVisitor +" {\n";
+        if(isInterfaceClassVisitor){
+            source +="interface " +  nameClassVisitor +" {\n";
+        }
+        else {
+            if(ModifierSet.isAbstract(modifierClassVisitor)) {
+                source +="abstract class " +  nameClassVisitor +" {\n";
+            }
+            else {
+                source +="class " +  nameClassVisitor +" {\n";
+            }
+        }
+
+
 
         //A. Making UML FIELD string
         for (String field: nameFieldVisitor)
@@ -207,7 +221,8 @@ public class UseJavaParser {
                 substr1 += typeFieldVisitor.get(index).substring(typeFieldVisitor.get(index).indexOf('<')+1,typeFieldVisitor.get(index).indexOf('>'));
             }
 
-            if(classNames.indexOf(typeFieldVisitor.get(index))>=0 || classNames.indexOf(substr1)>=0 ){
+            if(classNames.indexOf(typeFieldVisitor.get(index))>=0 || classNames.indexOf(substr1)>=0
+                    ||interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0){
                 AssociationItem associationItem = new AssociationItem();
                 associationItem.startName=nameClassVisitor;
 
@@ -250,16 +265,18 @@ public class UseJavaParser {
             }
 
             //2.find if any use of interface in the field type, save to useInterfaceList
-            for(String interfaceName:interfaceNames) {
-
-                if (interfaceName.equals(substr1) || interfaceName.equals(typeFieldVisitor.get(index))) {
-                    UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
-                    useInterfaceItem.interfaceName = interfaceName;
-                    useInterfaceItem.useName = nameClassVisitor;
-
-                        useInterfaceList.add(useInterfaceItem);
-                }
-            }
+//            for(String interfaceName:interfaceNames) {
+//
+//                if (interfaceName.equals(substr1) || interfaceName.equals(typeFieldVisitor.get(index))) {
+//                    UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
+//                    useInterfaceItem.interfaceName = interfaceName;
+//                    useInterfaceItem.useName = nameClassVisitor;
+//
+//                    //if use is a class, added to useInterfaceList, ignore used by a interface
+//                    if(classNames.contains(nameClassVisitor))
+//                        useInterfaceList.add(useInterfaceItem);
+//                }
+//            }
         }
 
         source += "__\n";
@@ -300,6 +317,8 @@ public class UseJavaParser {
                         useInterfaceItem.interfaceName = interfaceName;
                         useInterfaceItem.useName = nameClassVisitor;
 
+                        //if use is a class, added to useInterfaceList, ignore used by a interface
+                        if(classNames.contains(nameClassVisitor))
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -315,7 +334,7 @@ public class UseJavaParser {
         for(String methodName:nameMethodVisitor)
         {
             int index = nameMethodVisitor.indexOf(methodName);
-            if(ModifierSet.isPublic(modifierMethodVisitor.get(index))) {
+            if(ModifierSet.isPublic(modifierMethodVisitor.get(index)) || interfaceNames.contains(nameClassVisitor)) {
                 String parameterStr="";
 
                 for(Parameter parameterSingle:parameterListMethodVisitor.get(index)) {
@@ -350,6 +369,8 @@ public class UseJavaParser {
                         useInterfaceItem.interfaceName = interfaceName;
                         useInterfaceItem.useName = nameClassVisitor;
 
+                        //if use is a class, added to useInterfaceList, ignore used by a interface
+                        if(classNames.contains(nameClassVisitor))
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -374,6 +395,8 @@ public class UseJavaParser {
                     useInterfaceItem.interfaceName = interfaceName;
                     useInterfaceItem.useName = nameClassVisitor;
 
+                    //if use is a class, added to useInterfaceList, ignore use by a interface
+                    if(classNames.contains(nameClassVisitor))
                         useInterfaceList.add(useInterfaceItem);
                 }
             }
@@ -396,22 +419,22 @@ public class UseJavaParser {
 
             int i=0;
             for( ; i<associationItemMap.size(); i++) {
-                if(associationItemMap.get(i).startName.equals(class2)) {
+                if(associationItemMap.get(i).startName.equals(class2) && associationItemMap.get(i).endName.equals(class1)) {
                     break;
                 }
             }
             if(i<associationItemMap.size()) {
                 if(associationItemMap.get(0).ifMultiple && associationItemMap.get(i).ifMultiple) {
-                    source += class1+"\"*\"" + "--" + "\"*\"" + class2 +"\n";
+                    source += class1+" \"*\"" + "--" + "\"*\" " + class2 +"\n";
                 }
                 else if(associationItemMap.get(0).ifMultiple) {
-                    source += class1+"\"1\"" + "--" + "\"*\"" + class2 +"\n";
+                    source += class1+" \"1\"" + " --" + "\"*\" " + class2 +"\n";
                 }
                 else if(associationItemMap.get(i).ifMultiple) {
-                    source += class1+"\"*\"" + "--" + "\"1\"" + class2 +"\n";
+                    source += class1+" \"*\"" + "-- " + "\"1\" " + class2 +"\n";
                 }
                 else {
-                    source += class1+"\"1\"" + "--" + "\"1\"" + class2 +"\n";
+                    source += class1+" \"1\"" + " -- " + "\"1\" " + class2 +"\n";
                 }
                 associationItemMap.remove(i);
                 associationItemMap.remove(0);
@@ -419,15 +442,17 @@ public class UseJavaParser {
             else {
                 if(associationItemMap.get(0).ifMultiple) {
                     if(associationItemMap.get(0).endName.toUpperCase().equals(associationItemMap.get(0).attributeName.toUpperCase())){
-                        source += class1 + "-->" + "\"*\"" + class2 + "\n";
+                        source += class1 + " --" + "\"*\" " + class2 + "\n";
                     }
                     else {
-                        source += class1 + "-->" + "\"*\"" + class2 +":" + associationItemMap.get(0).attributeName + "\n";
+                        //source += class1 + " --" + "\"*\" " + class2 +":" + associationItemMap.get(0).attributeName + "\n";
+                        source += class1 + " --" + "\"*\" " + class2 + "\n";
                     }
 
                 }
                 else {
-                    source += class1 + "-->" + "\"1\"" + class2 +":" + associationItemMap.get(0).attributeName + "\n";
+                    //source += class1 + " --" + "\"1\" " + class2 +":" + associationItemMap.get(0).attributeName + "\n";
+                    source += class1 + " --" + "\"1\" " + class2 + "\n";
                 }
                 associationItemMap.remove(0);
             }
@@ -443,104 +468,115 @@ public class UseJavaParser {
     public void createExtendStrUML() {
         String source = "";
         for(ExtendItem item: extendItemList){
-            source += item.superClassName + "<|--" + item.subClassName+ "\n";
+            source += item.superClassName + " <|-- " + item.subClassName+ "\n";
         }
 
         extendStrUML.add(source);
 
     }
 
-    //4. create ball and socket UML
-    public void createballsocketStrUML() {
+    //4. create Interface UML
+    public void createInterfaceStrUML() {
         String source = "";
         int usecase1 = 0;
         int usecase2 = 1;
 
-        while(!implementInterfaceList.isEmpty()){
-            String interfaceName=implementInterfaceList.get(0).interfaceName;
-            List<String> implementList=new ArrayList<String>();
-            List<String> useList=new ArrayList<String>();
+        for(ImplementInterfaceItem item:implementInterfaceList ) {
 
-            int index = 0;
-            while(index<implementInterfaceList.size()) {
-                for(ImplementInterfaceItem implementItem:implementInterfaceList){
-                    index++;
-                    if(implementItem.interfaceName.equals(interfaceName)) {
-                        implementList.add(implementItem.implementName);
-                        implementInterfaceList.remove(implementItem);
-                        index=0;
-                        break;
-                    }
-                }
-            }
-
-
-
-            index = 0;
-            while(index<useInterfaceList.size()) {
-                for(UseInterfaceItem useItem:useInterfaceList) {
-                    index++;
-                    if(useItem.interfaceName.equals(interfaceName)) {
-                        useList.add(useItem.useName);
-                        useInterfaceList.remove(useItem);
-                        index=0;
-                        break;
-                    }
-                }
-            }
-
-
-
-            if(implementList.size()==1 && useList.size()==0) {
-                source += interfaceName + "()-" + implementList.get(0)  +"\n";
-            }
-
-            else if(implementList.size()==1 && useList.size()==1) {
-                source += implementList.get(0) + "-0)-" + useList.get(0) + ":`"+ interfaceName +"\n";
-            }
-
-            else if(implementList.size()==1 && useList.size() > 1) {
-                source +="mix_usecase " + usecase1 + "\n";
-                source += implementList.get(0) + "-0)- " + usecase1 +  ":`"+ interfaceName +"\n";
-                for(String useName: useList) {
-                    source += usecase1 + " -- " + useName + ":use\n";
-                }
-            }
-
-            else if(implementList.size() > 1 && useList.size()==0) {
-                source +="mix_usecase "+ usecase1 +"\n";
-                source += interfaceName + "()- "+ usecase1 + "\n";
-                for(String implementName:implementList) {
-                    source += usecase1+" --" + implementName + "\n";
-                }
-            }
-
-            else if(implementList.size() > 1 && useList.size() == 1) {
-                source +="mix_usecase "+ usecase1 +"\n";
-                source +=usecase1 + " -0)-" + useList.get(0) + ":`"+ interfaceName +"\n";
-                for(String implementName:implementList) {
-                    source += implementName + " -- "+ usecase1 +"\n";
-                }
-            }
-
-            else if(implementList.size() > 1 && useList.size() > 1) {
-                source +="mix_usecase "+ usecase1+ "\n";
-                source +="mix_usecase "+ usecase2+ "\n";
-                source += usecase1 + " -0)- "+ usecase2 +  ":`"+ interfaceName +"\n";
-
-                for(String implementName:implementList) {
-                    source += implementName + " -- "+ usecase1 +"\n";
-                }
-
-                for(String useName: useList) {
-                    source +=usecase2 + " -- " + useName + ":use\n";
-                }
-            }
-
-            usecase1=usecase1+2;
-            usecase2=usecase2+2;
+            source += item.interfaceName+ " <|.. " + item.implementName +"\n";
 
         }
+
+        for(UseInterfaceItem item:useInterfaceList) {
+            source += item.useName + " ..> " +item.interfaceName + ": use\n";
+        }
+
+
+//        while(!implementInterfaceList.isEmpty()){
+//            String interfaceName=implementInterfaceList.get(0).interfaceName;
+//            List<String> implementList=new ArrayList<String>();
+//            List<String> useList=new ArrayList<String>();
+//
+//            int index = 0;
+//            while(index<implementInterfaceList.size()) {
+//                for(ImplementInterfaceItem implementItem:implementInterfaceList){
+//                    index++;
+//                    if(implementItem.interfaceName.equals(interfaceName)) {
+//                        implementList.add(implementItem.implementName);
+//                        implementInterfaceList.remove(implementItem);
+//                        index=0;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//
+//
+//            index = 0;
+//            while(index<useInterfaceList.size()) {
+//                for(UseInterfaceItem useItem:useInterfaceList) {
+//                    index++;
+//                    if(useItem.interfaceName.equals(interfaceName)) {
+//                        useList.add(useItem.useName);
+//                        useInterfaceList.remove(useItem);
+//                        index=0;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//
+//
+//            if(implementList.size()==1 && useList.size()==0) {
+//                source += interfaceName + "()-" + implementList.get(0)  +"\n";
+//            }
+//
+//            else if(implementList.size()==1 && useList.size()==1) {
+//                source += implementList.get(0) + "-0)-" + useList.get(0) + ":`"+ interfaceName +"\n";
+//            }
+//
+//            else if(implementList.size()==1 && useList.size() > 1) {
+//                source +="mix_usecase " + usecase1 + "\n";
+//                source += implementList.get(0) + "-0)- " + usecase1 +  ":`"+ interfaceName +"\n";
+//                for(String useName: useList) {
+//                    source += usecase1 + " -- " + useName + ":use\n";
+//                }
+//            }
+//
+//            else if(implementList.size() > 1 && useList.size()==0) {
+//                source +="mix_usecase "+ usecase1 +"\n";
+//                source += interfaceName + "()- "+ usecase1 + "\n";
+//                for(String implementName:implementList) {
+//                    source += usecase1+" --" + implementName + "\n";
+//                }
+//            }
+//
+//            else if(implementList.size() > 1 && useList.size() == 1) {
+//                source +="mix_usecase "+ usecase1 +"\n";
+//                source +=usecase1 + " -0)-" + useList.get(0) + ":`"+ interfaceName +"\n";
+//                for(String implementName:implementList) {
+//                    source += implementName + " -- "+ usecase1 +"\n";
+//                }
+//            }
+//
+//            else if(implementList.size() > 1 && useList.size() > 1) {
+//                source +="mix_usecase "+ usecase1+ "\n";
+//                source +="mix_usecase "+ usecase2+ "\n";
+//                source += usecase1 + " -0)- "+ usecase2 +  ":`"+ interfaceName +"\n";
+//
+//                for(String implementName:implementList) {
+//                    source += implementName + " -- "+ usecase1 +"\n";
+//                }
+//
+//                for(String useName: useList) {
+//                    source +=usecase2 + " -- " + useName + ":use\n";
+//                }
+//            }
+//
+//            usecase1=usecase1+2;
+//            usecase2=usecase2+2;
+//
+//        }
 
 
         /*
@@ -564,7 +600,7 @@ public class UseJavaParser {
         */
 
 
-        ballsocketStrUML.add(source);
+        interfaceStrUML.add(source);
     }
 
 

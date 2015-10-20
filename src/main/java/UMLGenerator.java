@@ -41,7 +41,7 @@ public class UMLGenerator {
         source += "@enduml\n";
 
 
-        //System.out.print(source);//print test
+       // System.out.print(source);//print test
 
 
 

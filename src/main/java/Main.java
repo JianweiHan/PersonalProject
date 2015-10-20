@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-5/";
+        String folderPath="../testUML/uml-parser-test-3/";
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);
@@ -87,10 +87,13 @@ public class Main {
             new UseJavaParser.ConstructorVisitor().visit(cu,null);
 
 
-            //create UML string if it is a class, not an interface
-            if(usejavaparser.classNames.indexOf(usejavaparser.nameClassVisitor)>=0) {
-                usejavaparser.createClassStrUML();
-            }
+            //a. create UML string for both interface and normal class
+            usejavaparser.createClassStrUML();
+            //b.create UML string if it is a class, not an interface
+//            if(usejavaparser.classNames.indexOf(usejavaparser.nameClassVisitor)>=0) {
+//                usejavaparser.createClassStrUML();
+//            }
+
             usejavaparser.clearTempStaticClass();
         }
 
@@ -107,14 +110,14 @@ public class Main {
 //        {
 //            System.out.println("extend: " + newItem.subClassName+ ":"+newItem.superClassName);
 //        }
-        for(UseJavaParser.UseInterfaceItem newItem:usejavaparser.useInterfaceList)
-        {
-            System.out.println("useInterface: " + newItem.useName+ ":"+newItem.interfaceName);
-        }
+//        for(UseJavaParser.UseInterfaceItem newItem:usejavaparser.useInterfaceList)
+//        {
+//            System.out.println("useInterface: " + newItem.useName+ ":"+newItem.interfaceName);
+//        }
 //
 //
-//        for (UseJavaParser.AssociationItem item:usejavaparser.associationItemMap)
-//        System.out.println(item.startName+ item.endName+item.attributeName+item.ifMultiple);
+        for (UseJavaParser.AssociationItem item:usejavaparser.associationItemMap)
+        System.out.println("startName:"+item.startName+ " endname: "+item.endName+" attribute:"+item.attributeName+item.ifMultiple);
 
 
 
@@ -124,13 +127,13 @@ public class Main {
         //4.create extend relation UML string between java classes
         usejavaparser.createExtendStrUML();
         //5.create ball and socket UML string
-        usejavaparser.createballsocketStrUML();
+        usejavaparser.createInterfaceStrUML();
 
 
         /**
          * call UMLGenerator that translates String out put into plantUML
          */
-        UMLGenerator.umlGenerator(usejavaparser.classStrUML, usejavaparser.associationStrUML, usejavaparser.extendStrUML,usejavaparser.ballsocketStrUML);
+        UMLGenerator.umlGenerator(usejavaparser.classStrUML, usejavaparser.associationStrUML, usejavaparser.extendStrUML,usejavaparser.interfaceStrUML);
 
 
         /**
