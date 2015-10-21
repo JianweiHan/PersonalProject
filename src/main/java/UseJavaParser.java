@@ -1,7 +1,10 @@
 import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.sun.javafx.image.impl.ByteIndexed;
 
 import java.util.*;
 
@@ -64,6 +67,25 @@ public class UseJavaParser {
         String implementName;
     }
 
+    class FieldAccessLocation {
+        String fieldname;
+        int lineNumber;
+    }
+
+    class SetterGetterLocation {
+        String methodName;
+        boolean isSetter;
+        boolean isGetter;
+        int startLine;
+        int endLine;
+    }
+
+    class ReturnStatement {
+        String returnName;
+        int lineNumber;
+    }
+
+
     //1. used to save output from ClassVisitor
     static String nameClassVisitor;
     static boolean isInterfaceClassVisitor;
@@ -88,7 +110,17 @@ public class UseJavaParser {
     static List<List<Parameter>> parameterListConstructorVisitor;
 
     //5. used to save inner attribute types of methods
-    static ArrayList<String> innerAttributeTypes  = new ArrayList<String>();
+    static ArrayList<String> innerAttributeTypes ;
+
+    //6. used to save field access locations
+    static ArrayList<FieldAccessLocation> fieldAccessVisitor;
+
+    //7. used to save setter and getter method location
+    static ArrayList<SetterGetterLocation> setterGetterLocationVisitor;
+
+    //8. used to save return statement
+    static ArrayList<ReturnStatement> returnStatementVisitor;
+
 
 
     UseJavaParser(){
@@ -122,6 +154,11 @@ public class UseJavaParser {
         parameterListConstructorVisitor = new ArrayList<List<Parameter>>();
 
         innerAttributeTypes  = new ArrayList<String>();
+
+        fieldAccessVisitor = new ArrayList<FieldAccessLocation>();
+
+        setterGetterLocationVisitor = new ArrayList<SetterGetterLocation>();
+        returnStatementVisitor = new ArrayList<ReturnStatement>();
     }
 
 
@@ -137,7 +174,7 @@ public class UseJavaParser {
             modifierClassVisitor = n.getModifiers();
 
             //print class name
-            System.out.println("Class name is: " + n.getName());
+             System.out.println("Class name is: " + n.getName());
             /*
             System.out.println(n.getEndLine());
             if(n.isInterface())
@@ -161,10 +198,36 @@ public class UseJavaParser {
             typeMethodVisitor.add(n.getType().toString());
             parameterListMethodVisitor.add(n.getParameters());
 
+
+            SetterGetterLocation setterGetterLocation = (SetterGetterLocation) arg;
+            if(n.getName().toUpperCase().indexOf("SET")>=0)
+            {
+                setterGetterLocation.methodName = n.getName();
+                setterGetterLocation.isGetter = false;
+                setterGetterLocation.isSetter = true;
+                setterGetterLocation.startLine = n.getBeginLine();
+                setterGetterLocation.endLine = n.getEndLine();
+                setterGetterLocationVisitor.add(setterGetterLocation);
+                System.out.println(n.getName()+"begin"+n.getBeginLine()+"end"+n.getEndLine());
+            }
+            else if(n.getName().toUpperCase().indexOf("GET")>=0)
+            {
+                setterGetterLocation.methodName = n.getName();
+                setterGetterLocation.isGetter = true;
+                setterGetterLocation.isSetter = false;
+                setterGetterLocation.startLine = n.getBeginLine();
+                setterGetterLocation.endLine = n.getEndLine();
+                setterGetterLocationVisitor.add(setterGetterLocation);
+                System.out.println(n.getName() + "begin" + n.getBeginLine() + "end" + n.getEndLine());
+            }
+
+
+
             //print method name
-            System.out.println(n.getName());
+          //  System.out.println(n.getName());
 
         }
+
     }
 
 
@@ -200,11 +263,39 @@ public class UseJavaParser {
         }
     }
 
+    //6. visit field access location in the code
+    public static class FieldAccessExprVisitor extends VoidVisitorAdapter {
+        @Override
+        public void visit(FieldAccessExpr n, Object arg) {
+
+            //System.out.println(n.getField());
+          //  System.out.println(n.getBeginLine());
+
+            FieldAccessLocation fieldAccessLocation = (FieldAccessLocation) arg;
+            fieldAccessLocation.fieldname = n.getField();
+            fieldAccessLocation.lineNumber=n.getBeginLine();
+            System.out.println(n.getField());
+            System.out.println(n.getBeginLine());
+            fieldAccessVisitor.add(fieldAccessLocation);
+        }
+    }
+
+    //7. visit return type of method for getter method check
+    public static class ReturnStmtVisitor extends VoidVisitorAdapter {
+        @Override
+        public void visit(ReturnStmt n, Object arg) {
+            ReturnStatement returnStatement = (ReturnStatement) arg;
+            returnStatement.returnName = n.getExpr().toString();
+            returnStatement.lineNumber = n.getBeginLine();
+            returnStatementVisitor.add(returnStatement);
+        }
+    }
 
 
 
     //1. create class UML & save use of interfaces & save association
     public void createClassStrUML() {
+
         String source = "";
         if(isInterfaceClassVisitor){
             source +="interface " +  nameClassVisitor +" {\n";
@@ -273,8 +364,12 @@ public class UseJavaParser {
                    if (ModifierSet.isPublic(modifierFieldVistor.get(index))){
                         source += "+" + field + ":" + typefieldstr + "\n";
                    }
+                   else if(isFieldHasGetterSetter(field)) {
+                        source += "+" + field + ":" + typefieldstr + "\n";
+                   }
                    else if (ModifierSet.isPrivate(modifierFieldVistor.get(index))) {
                        source += "-" + field + ":" + typefieldstr + "\n";
+
                    }
             }
 
@@ -348,7 +443,8 @@ public class UseJavaParser {
         for(String methodName:nameMethodVisitor)
         {
             int index = nameMethodVisitor.indexOf(methodName);
-            if(ModifierSet.isPublic(modifierMethodVisitor.get(index)) || interfaceNames.contains(nameClassVisitor)) {
+            if((ModifierSet.isPublic(modifierMethodVisitor.get(index)) || interfaceNames.contains(nameClassVisitor))
+                   && !isMethodGetterSetter(methodName)) {
                 String parameterStr="";
 
                 for(Parameter parameterSingle:parameterListMethodVisitor.get(index)) {
@@ -653,6 +749,65 @@ public class UseJavaParser {
 
         innerAttributeTypes.clear();
 
+        fieldAccessVisitor.clear();
+
+        setterGetterLocationVisitor.clear();
+
+        returnStatementVisitor.clear();
+
+    }
+
+    public boolean isFieldHasGetterSetter (String fieldName) {
+
+        for(FieldAccessLocation fieldAccessItem: fieldAccessVisitor){
+           // System.out.println("field:"+fieldName);
+          //  System.out.println("FieldName: " + fieldAccessItem.fieldname + " Line:" + fieldAccessItem.lineNumber);
+            if(fieldName.equals(fieldAccessItem.fieldname))
+            {
+                int fieldline=fieldAccessItem.lineNumber;
+                int count = 0;
+                for(SetterGetterLocation item: setterGetterLocationVisitor){
+                    if(item.startLine <= fieldline && item.endLine>=fieldline)
+                        count++;
+                }
+
+                System.out.println(count);
+
+                if (count>0) return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isMethodGetterSetter (String methodName) {
+        for(SetterGetterLocation setterGetterLocationItem: setterGetterLocationVisitor){
+            if(methodName.equals(setterGetterLocationItem.methodName)) {
+
+                // check if setter
+                for(FieldAccessLocation fieldAccessItem:fieldAccessVisitor) {
+                    int fieldline = fieldAccessItem.lineNumber;
+                    if(setterGetterLocationItem.startLine <= fieldline && setterGetterLocationItem.endLine>=fieldline)
+                        return true;
+                }
+
+
+                // check if getter
+                for(ReturnStatement returnItem:returnStatementVisitor) {
+                    for(String fieldNameItem:nameFieldVisitor) {
+                        if(returnItem.returnName.indexOf(fieldNameItem)>=0) {
+                            int returnline = returnItem.lineNumber;
+                            if(setterGetterLocationItem.startLine <= returnline && setterGetterLocationItem.endLine>=returnline)
+                                return true;
+                        }
+                    }
+                }
+
+
+            }
+        }
+
+        return false;
     }
 
 
