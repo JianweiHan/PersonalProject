@@ -251,7 +251,11 @@ public class UseJavaParser {
         @Override
         public void visit(FieldDeclaration n, Object arg) {
             typeFieldVisitor.add(n.getType().toString());
-            nameFieldVisitor.add(n.getVariables().get(0).toString());
+            String varName=n.getVariables().get(0).toString();
+            if (varName.indexOf("=")>=0) {
+                varName=varName.substring(0, varName.indexOf("="));
+            }
+            nameFieldVisitor.add(varName);
             modifierFieldVistor.add(n.getModifiers());
         }
     }
