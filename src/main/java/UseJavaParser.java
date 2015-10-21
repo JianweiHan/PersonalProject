@@ -214,9 +214,9 @@ public class UseJavaParser {
             // check if method is getter or setter
             if(n.getName().toUpperCase().indexOf("SET")>=0)
             {
-                System.out.println("set is yes");
+
                 for(String nameItem:nameFieldVisitor) {
-                    if(n.toString().indexOf(nameItem)>=0) {
+                    if(n.getName().toUpperCase().equals(("set" + nameItem).toUpperCase())) {
                         setGetMethodNameVisitor.add(n.getName());
                         setGetFieldNameVisitor.add(nameItem);
                         setGetIsGetVisitor.add(false);
@@ -227,9 +227,9 @@ public class UseJavaParser {
             }
             else if(n.getName().toUpperCase().indexOf("GET")>=0)
             {
-                System.out.println("get is yes");
+
                 for(String nameItem:nameFieldVisitor) {
-                    if(n.toString().indexOf(nameItem)>=0) {
+                    if(n.getName().toUpperCase().equals(("get"+nameItem).toUpperCase())) {
                         setGetMethodNameVisitor.add(n.getName());
                         setGetFieldNameVisitor.add(nameItem);
                         setGetIsGetVisitor.add(true);
