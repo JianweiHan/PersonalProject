@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-3/";
+        String folderPath="../testUML/uml-parser-test-5/";
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);
@@ -83,10 +83,10 @@ public class Main {
 
 
             new UseJavaParser.ClassVisitor().visit(cu, null);
-            new UseJavaParser.FieldAccessExprVisitor().visit(cu,usejavaparser.new FieldAccessLocation());
-            new UseJavaParser.MethodVisitor().visit(cu, usejavaparser.new SetterGetterLocation());
-            new UseJavaParser.ReturnStmtVisitor().visit(cu, usejavaparser.new ReturnStatement());
+           // new UseJavaParser.FieldAccessExprVisitor().visit(cu,usejavaparser.new FieldAccessLocation());
+           //  new UseJavaParser.ReturnStmtVisitor().visit(cu, usejavaparser.new ReturnStatement());
             new UseJavaParser.FieldVisitor().visit(cu, null);
+            new UseJavaParser.MethodVisitor().visit(cu, null);
             new UseJavaParser.ConstructorVisitor().visit(cu,null);
             new UseJavaParser.VariableDecVisitor().visit(cu,null);
 

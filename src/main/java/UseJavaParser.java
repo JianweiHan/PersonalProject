@@ -69,15 +69,16 @@ public class UseJavaParser {
 
     class FieldAccessLocation {
         String fieldname;
-        int lineNumber;
+        boolean hasGetter;
+        boolean hasSetter;
     }
 
     class SetterGetterLocation {
         String methodName;
+        String fieldName;
         boolean isSetter;
         boolean isGetter;
-        int startLine;
-        int endLine;
+
     }
 
     class ReturnStatement {
@@ -117,6 +118,11 @@ public class UseJavaParser {
 
     //7. used to save setter and getter method location
     static ArrayList<SetterGetterLocation> setterGetterLocationVisitor;
+    static ArrayList<String> setGetMethodNameVisitor;
+    static ArrayList<String> setGetFieldNameVisitor;
+    static ArrayList<Boolean> setGetIsGetVisitor;
+    static ArrayList<Boolean> setGetIsSetVisitor;
+
 
     //8. used to save return statement
     static ArrayList<ReturnStatement> returnStatementVisitor;
@@ -158,6 +164,11 @@ public class UseJavaParser {
         fieldAccessVisitor = new ArrayList<FieldAccessLocation>();
 
         setterGetterLocationVisitor = new ArrayList<SetterGetterLocation>();
+        setGetMethodNameVisitor = new ArrayList<String>();
+        setGetFieldNameVisitor = new ArrayList<String>();
+        setGetIsGetVisitor = new ArrayList<Boolean>();
+        setGetIsSetVisitor = new ArrayList<Boolean>();
+
         returnStatementVisitor = new ArrayList<ReturnStatement>();
     }
 
@@ -174,7 +185,7 @@ public class UseJavaParser {
             modifierClassVisitor = n.getModifiers();
 
             //print class name
-             System.out.println("Class name is: " + n.getName());
+            // System.out.println("Class name is: " + n.getName());
             /*
             System.out.println(n.getEndLine());
             if(n.isInterface())
@@ -199,32 +210,35 @@ public class UseJavaParser {
             parameterListMethodVisitor.add(n.getParameters());
 
 
-            SetterGetterLocation setterGetterLocation = (SetterGetterLocation) arg;
+
+            // check if method is getter or setter
             if(n.getName().toUpperCase().indexOf("SET")>=0)
             {
-                setterGetterLocation.methodName = n.getName();
-                setterGetterLocation.isGetter = false;
-                setterGetterLocation.isSetter = true;
-                setterGetterLocation.startLine = n.getBeginLine();
-                setterGetterLocation.endLine = n.getEndLine();
-                setterGetterLocationVisitor.add(setterGetterLocation);
-                System.out.println(n.getName()+"begin"+n.getBeginLine()+"end"+n.getEndLine());
+                System.out.println("set is yes");
+                for(String nameItem:nameFieldVisitor) {
+                    if(n.toString().indexOf(nameItem)>=0) {
+                        setGetMethodNameVisitor.add(n.getName());
+                        setGetFieldNameVisitor.add(nameItem);
+                        setGetIsGetVisitor.add(false);
+                        setGetIsSetVisitor.add(true);
+                    }
+                }
+
             }
             else if(n.getName().toUpperCase().indexOf("GET")>=0)
             {
-                setterGetterLocation.methodName = n.getName();
-                setterGetterLocation.isGetter = true;
-                setterGetterLocation.isSetter = false;
-                setterGetterLocation.startLine = n.getBeginLine();
-                setterGetterLocation.endLine = n.getEndLine();
-                setterGetterLocationVisitor.add(setterGetterLocation);
-                System.out.println(n.getName() + "begin" + n.getBeginLine() + "end" + n.getEndLine());
+                System.out.println("get is yes");
+                for(String nameItem:nameFieldVisitor) {
+                    if(n.toString().indexOf(nameItem)>=0) {
+                        setGetMethodNameVisitor.add(n.getName());
+                        setGetFieldNameVisitor.add(nameItem);
+                        setGetIsGetVisitor.add(true);
+                        setGetIsSetVisitor.add(false);
+                    }
+                }
             }
 
 
-
-            //print method name
-          //  System.out.println(n.getName());
 
         }
 
@@ -263,6 +277,7 @@ public class UseJavaParser {
         }
     }
 
+/*
     //6. visit field access location in the code
     public static class FieldAccessExprVisitor extends VoidVisitorAdapter {
         @Override
@@ -290,11 +305,16 @@ public class UseJavaParser {
             returnStatementVisitor.add(returnStatement);
         }
     }
-
+*/
 
 
     //1. create class UML & save use of interfaces & save association
     public void createClassStrUML() {
+
+        for(SetterGetterLocation setterGetterItem:setterGetterLocationVisitor) {
+            System.out.println(setterGetterItem.methodName+ " fieldName:"+setterGetterItem.fieldName+" getter:"+setterGetterItem.isGetter+"setter:"+setterGetterItem.isSetter);
+            }
+
 
         String source = "";
         if(isInterfaceClassVisitor){
@@ -438,7 +458,7 @@ public class UseJavaParser {
 
 
 
-        //System.out.print("methodvisitor: "+nameMethodVisitor);
+
         //C. making method UML String
         for(String methodName:nameMethodVisitor)
         {
@@ -530,8 +550,7 @@ public class UseJavaParser {
             }
         }
 
-        //print class string for UML
-        //System.out.print(source);
+
 
         classStrUML.add(source);
     }
@@ -752,58 +771,39 @@ public class UseJavaParser {
         fieldAccessVisitor.clear();
 
         setterGetterLocationVisitor.clear();
+        setGetMethodNameVisitor.clear();
+        setGetFieldNameVisitor.clear();
+        setGetIsGetVisitor.clear();
+        setGetIsSetVisitor.clear();
 
         returnStatementVisitor.clear();
 
     }
 
+
     public boolean isFieldHasGetterSetter (String fieldName) {
+        boolean hasSetter=false;
+        boolean hasGetter=false;
+        for( int i =0; i<setGetFieldNameVisitor.size();i++) {
 
-        for(FieldAccessLocation fieldAccessItem: fieldAccessVisitor){
-           // System.out.println("field:"+fieldName);
-          //  System.out.println("FieldName: " + fieldAccessItem.fieldname + " Line:" + fieldAccessItem.lineNumber);
-            if(fieldName.equals(fieldAccessItem.fieldname))
-            {
-                int fieldline=fieldAccessItem.lineNumber;
-                int count = 0;
-                for(SetterGetterLocation item: setterGetterLocationVisitor){
-                    if(item.startLine <= fieldline && item.endLine>=fieldline)
-                        count++;
-                }
-
-                System.out.println(count);
-
-                if (count>0) return true;
+            if(setGetFieldNameVisitor.get(i).equals(fieldName)){
+                if(setGetIsSetVisitor.get(i)) hasSetter=true;
+                if(setGetIsGetVisitor.get(i)) hasGetter=true;
             }
         }
+        if(hasSetter && hasGetter)
+            return true;
 
         return false;
     }
 
     public boolean isMethodGetterSetter (String methodName) {
-        for(SetterGetterLocation setterGetterLocationItem: setterGetterLocationVisitor){
-            if(methodName.equals(setterGetterLocationItem.methodName)) {
 
-                // check if setter
-                for(FieldAccessLocation fieldAccessItem:fieldAccessVisitor) {
-                    int fieldline = fieldAccessItem.lineNumber;
-                    if(setterGetterLocationItem.startLine <= fieldline && setterGetterLocationItem.endLine>=fieldline)
-                        return true;
-                }
-
-
-                // check if getter
-                for(ReturnStatement returnItem:returnStatementVisitor) {
-                    for(String fieldNameItem:nameFieldVisitor) {
-                        if(returnItem.returnName.indexOf(fieldNameItem)>=0) {
-                            int returnline = returnItem.lineNumber;
-                            if(setterGetterLocationItem.startLine <= returnline && setterGetterLocationItem.endLine>=returnline)
-                                return true;
-                        }
-                    }
-                }
-
-
+        for(String methodItem:setGetMethodNameVisitor){
+            if(methodItem.equals(methodName)) {
+                int index=setGetMethodNameVisitor.indexOf(methodItem);
+                if(setGetIsSetVisitor.get(index)||setGetIsGetVisitor.get(index))
+                    return true;
             }
         }
 
