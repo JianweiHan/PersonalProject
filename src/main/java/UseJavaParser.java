@@ -322,7 +322,7 @@ public class UseJavaParser {
 
         String source = "";
         if(isInterfaceClassVisitor){
-            source +="interface " +  nameClassVisitor +" {\n";
+            source +="interface " +  nameClassVisitor +" <<interface>> {\n";
         }
         else {
             if(ModifierSet.isAbstract(modifierClassVisitor)) {

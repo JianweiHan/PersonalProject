@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         //find all .java files in the given folder
-        String folderPath="../testUML/uml-parser-test-1/";
+        String folderPath=args[0];
         ArrayList<String> filePaths= new ArrayList<String>(); // used to save all the files' path
         String fileStr;
         File folder = new File(folderPath);
@@ -137,7 +137,7 @@ public class Main {
         /**
          * call UMLGenerator that translates String out put into plantUML
          */
-        UMLGenerator.umlGenerator(usejavaparser.classStrUML, usejavaparser.associationStrUML, usejavaparser.extendStrUML,usejavaparser.interfaceStrUML);
+        UMLGenerator.umlGenerator(args[1],usejavaparser.classStrUML, usejavaparser.associationStrUML, usejavaparser.extendStrUML,usejavaparser.interfaceStrUML);
 
 
         /**
