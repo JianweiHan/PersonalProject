@@ -315,10 +315,6 @@ public class UseJavaParser {
     //1. create class UML & save use of interfaces & save association
     public void createClassStrUML() {
 
-        for(SetterGetterLocation setterGetterItem:setterGetterLocationVisitor) {
-            System.out.println(setterGetterItem.methodName+ " fieldName:"+setterGetterItem.fieldName+" getter:"+setterGetterItem.isGetter+"setter:"+setterGetterItem.isSetter);
-            }
-
 
         String source = "";
         if(isInterfaceClassVisitor){
@@ -351,7 +347,7 @@ public class UseJavaParser {
             }
 
             if(classNames.indexOf(typeFieldVisitor.get(index))>=0 || classNames.indexOf(substr1)>=0
-                    ||interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0){
+                   /*||interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0*/){
                 AssociationItem associationItem = new AssociationItem();
                 associationItem.startName=nameClassVisitor;
 
@@ -398,18 +394,18 @@ public class UseJavaParser {
             }
 
             //2.find if any use of interface in the field type, save to useInterfaceList
-//            for(String interfaceName:interfaceNames) {
-//
-//                if (interfaceName.equals(substr1) || interfaceName.equals(typeFieldVisitor.get(index))) {
-//                    UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
-//                    useInterfaceItem.interfaceName = interfaceName;
-//                    useInterfaceItem.useName = nameClassVisitor;
-//
-//                    //if use is a class, added to useInterfaceList, ignore used by a interface
-//                    if(classNames.contains(nameClassVisitor))
-//                        useInterfaceList.add(useInterfaceItem);
-//                }
-//            }
+            for(String interfaceName:interfaceNames) {
+
+                if (interfaceName.equals(substr1) || interfaceName.equals(typeFieldVisitor.get(index))) {
+                    UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
+                    useInterfaceItem.interfaceName = interfaceName;
+                    useInterfaceItem.useName = nameClassVisitor;
+
+                    //if use is a class, added to useInterfaceList, ignore used by a interface
+                    //if(classNames.contains(nameClassVisitor))
+                        useInterfaceList.add(useInterfaceItem);
+                }
+            }
         }
 
         source += "__\n";
@@ -451,7 +447,7 @@ public class UseJavaParser {
                         useInterfaceItem.useName = nameClassVisitor;
 
                         //if use is a class, added to useInterfaceList, ignore used by a interface
-                        if(classNames.contains(nameClassVisitor))
+                        //if(classNames.contains(nameClassVisitor))
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -504,7 +500,7 @@ public class UseJavaParser {
                         useInterfaceItem.useName = nameClassVisitor;
 
                         //if use is a class, added to useInterfaceList, ignore used by a interface
-                        if(classNames.contains(nameClassVisitor))
+                        //if(classNames.contains(nameClassVisitor))
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -530,7 +526,7 @@ public class UseJavaParser {
                     useInterfaceItem.useName = nameClassVisitor;
 
                     //if use is a class, added to useInterfaceList, ignore use by a interface
-                    if(classNames.contains(nameClassVisitor))
+                    //if(classNames.contains(nameClassVisitor))
                         useInterfaceList.add(useInterfaceItem);
                 }
             }
@@ -542,15 +538,27 @@ public class UseJavaParser {
         //D. find if any use of interface inside a method
         for(String innervarType: innerAttributeTypes){
             for(String interfaceName:interfaceNames) {
-                if (interfaceName.equals(innervarType)) {
+                String fieldName=innervarType;
+
+                if(innervarType.indexOf('[')>=0) {
+                    fieldName = innervarType.substring(0, innervarType.indexOf('['));
+                }
+                else if(innervarType.contains("Collection") || innervarType.contains("List") || innervarType.contains("Map") ||innervarType.contains("Set") ) {
+                    fieldName = innervarType.substring(innervarType.indexOf('<')+1,innervarType.indexOf('>'));
+                }
+
+
+                if (interfaceName.equals(fieldName)) {
                     UseInterfaceItem useInterfaceItem = new UseInterfaceItem();
                     useInterfaceItem.interfaceName = interfaceName;
                     useInterfaceItem.useName = nameClassVisitor;
 
                     //if use is a class, added to useInterfaceList, ignore use by a interface
-                    if(classNames.contains(nameClassVisitor))
+                    //if(classNames.contains(nameClassVisitor))
                         useInterfaceList.add(useInterfaceItem);
                 }
+
+
             }
         }
 
