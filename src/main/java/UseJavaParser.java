@@ -347,7 +347,7 @@ public class UseJavaParser {
             }
 
             if(classNames.indexOf(typeFieldVisitor.get(index))>=0 || classNames.indexOf(substr1)>=0
-                   /*||interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0*/){
+                   ||interfaceNames.indexOf(typeFieldVisitor.get(index))>=0 || interfaceNames.indexOf(substr1)>=0){
                 AssociationItem associationItem = new AssociationItem();
                 associationItem.startName=nameClassVisitor;
 
@@ -394,6 +394,7 @@ public class UseJavaParser {
             }
 
             //2.find if any use of interface in the field type, save to useInterfaceList
+            /*
             for(String interfaceName:interfaceNames) {
 
                 if (interfaceName.equals(substr1) || interfaceName.equals(typeFieldVisitor.get(index))) {
@@ -402,10 +403,11 @@ public class UseJavaParser {
                     useInterfaceItem.useName = nameClassVisitor;
 
                     //if use is a class, added to useInterfaceList, ignore used by a interface
-                    //if(classNames.contains(nameClassVisitor))
+                    if(classNames.contains(nameClassVisitor))
                         useInterfaceList.add(useInterfaceItem);
                 }
             }
+            */
         }
 
         source += "__\n";
@@ -447,7 +449,7 @@ public class UseJavaParser {
                         useInterfaceItem.useName = nameClassVisitor;
 
                         //if use is a class, added to useInterfaceList, ignore used by a interface
-                        //if(classNames.contains(nameClassVisitor))
+                        if(classNames.contains(nameClassVisitor))
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -500,7 +502,7 @@ public class UseJavaParser {
                         useInterfaceItem.useName = nameClassVisitor;
 
                         //if use is a class, added to useInterfaceList, ignore used by a interface
-                        //if(classNames.contains(nameClassVisitor))
+                        if(classNames.contains(nameClassVisitor))
                             useInterfaceList.add(useInterfaceItem);
                     }
                 }
@@ -526,7 +528,7 @@ public class UseJavaParser {
                     useInterfaceItem.useName = nameClassVisitor;
 
                     //if use is a class, added to useInterfaceList, ignore use by a interface
-                    //if(classNames.contains(nameClassVisitor))
+                    if(classNames.contains(nameClassVisitor))
                         useInterfaceList.add(useInterfaceItem);
                 }
             }
@@ -554,7 +556,7 @@ public class UseJavaParser {
                     useInterfaceItem.useName = nameClassVisitor;
 
                     //if use is a class, added to useInterfaceList, ignore use by a interface
-                    //if(classNames.contains(nameClassVisitor))
+                    if(classNames.contains(nameClassVisitor))
                         useInterfaceList.add(useInterfaceItem);
                 }
 
@@ -585,13 +587,16 @@ public class UseJavaParser {
                     source += class1+" \"*\"" + "--" + "\"*\" " + class2 +"\n";
                 }
                 else if(associationItemMap.get(0).ifMultiple) {
-                    source += class1+" \"1\"" + " --" + "\"*\" " + class2 +"\n";
+                    //source += class1+" \"1\"" + " --" + "\"*\" " + class2 +"\n";
+                    source += class1 + " --" + "\"*\" " + class2 +"\n";
                 }
                 else if(associationItemMap.get(i).ifMultiple) {
-                    source += class1+" \"*\"" + "-- " + "\"1\" " + class2 +"\n";
+                    //source += class1+" \"*\"" + "-- " + "\"1\" " + class2 +"\n";
+                    source += class1+" \"*\"" + "-- "  + class2 +"\n";
                 }
                 else {
-                    source += class1+" \"1\"" + " -- " + "\"1\" " + class2 +"\n";
+                    //source += class1+" \"1\"" + " -- " + "\"1\" " + class2 +"\n";
+                    source += class1 + " -- " + class2 +"\n";
                 }
                 associationItemMap.remove(i);
                 associationItemMap.remove(0);
@@ -609,7 +614,8 @@ public class UseJavaParser {
                 }
                 else {
                     //source += class1 + " --" + "\"1\" " + class2 +":" + associationItemMap.get(0).attributeName + "\n";
-                    source += class1 + " --" + "\"1\" " + class2 + "\n";
+                    //source += class1 + " --" + "\"1\" " + class2 + "\n";
+                    source += class1 + " -- "  + class2 + "\n";
                 }
                 associationItemMap.remove(0);
             }
@@ -645,7 +651,8 @@ public class UseJavaParser {
         }
 
         for(UseInterfaceItem item:useInterfaceList) {
-            source += item.useName + " ..> " +item.interfaceName + ": use\n";
+            //source += item.useName + " ..> " +item.interfaceName + ": use\n";
+            source += item.useName + " ..> " +item.interfaceName + "\n";
         }
 
 
